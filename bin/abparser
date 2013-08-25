@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+var fs = require('fs')
+	, nu = require('nodeutil')
+	, _ = require('underscore')
+	, log = nu.logger.getInstance()
+	, p = require('commander')
+
+p.version('0.0.1')
+	.option('-s, --source [source]', 'The source file for parsing')
+	.option('-t, --target [target]', 'The target file path for output')
+	.option('-j, --json', 'Use json output not html table')
+	.parse(process.argv);	
+
+if(!p.source) {
+	console.log('Must specify the source using -s or --source [file path]');
+	process.exit(1);
+}
+
+var arr = fs.readFileSync(p.source, 'utf-8').split('\n');
+var out = [];
+
+for(var i = 0 ; i < arr.length ; i++) {
+	var a = {};
+	if(arr[i])
+	while(arr[i].indexOf('(longest request)') < 0){
+		if(arr[i]) {
+			if(arr[i].startsWith('URL:')) {
+				a['URL'] = arr[i].substring(4);
+			}
+			if(arr[i].startsWith('TS:')) {
+				a['TS'] = arr[i].substring(3);
+			}
+			if(arr[i].startsWith('Total:')) {
+				var total = arr[i].substring(7).trim().split(' ');
+				total = _.compact(total);
+				a['Total min'] = total[0];
+				a['Total mean1'] = total[1];
+				a['Total mean2'] = total[2];
+				a['Total median'] = total[3];
+				a['Total max'] = total[4];
+			}
+			
+			var map = ['N','Complete requests','Failed requests','Write errors',
+			 'Total transferred','Time taken for tests','Requests per second',
+			 'Transfer rate'];
+
+			for(var x = 0 ; x < map.length ; x++) {
+				var v = map[x];
+				if(arr[i].indexOf(v + ':') >= 0) {
+					a[v] = arr[i].split(':')[1].trim()
+				}
+			}
+		}
+		i++;
+  }
+	if(a['URL'])
+	out.push(a);
+}
+
+function jsonArrToTable(arr){
+  var TRs = '';
+  var keys = null;
+  for(var i = 0 ; i< arr.length ; i++){
+    var row = arr[i];
+    if(!keys) {
+			keys = Object.keys(row);
+			var TR = '<tr>';
+			for(var j = 0 ; j < keys.length ; j++) {
+				TR += ('<td>' + keys[j] + '</td>' );
+			}
+			TR+= '</tr>';
+			TRs += TR;
+		}
+
+    var TR = '<tr>';
+    for(var j = 0 ; j < keys.length ; j++) {
+      var rowvalue = row[keys[j]];
+      TR += ('<td>' + rowvalue + '</td>' );
+    }
+    TR+= '</tr>';
+    TRs += TR;
+  }
+  
+  var table = '<table>' + TRs +'</table>';
+  return table;
+}
+
+/**
+ * Format the output
+ */
+if(!p.json) {
+	out = jsonArrToTable(out)
+} else {
+	out = JSON.stringify(out);
+}
+
+/**
+ * Render the output
+ */
+if(!p.target) {
+	console.log(out);
+} else {
+	fs.writeFileSync(p.target, out, 'utf-8');
+}

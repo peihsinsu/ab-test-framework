@@ -1,0 +1,30 @@
+#!/bin/bash
+# Will source $1 for test config, sample config will like:
+# URL[0]=http://www.abc1.def.com/path/file.html
+# URL[1]=http://www.abc2.def.com/path/file.html
+# URL[2]=http://www.abc3.def.com/path/file.html
+if [ -z "$1" ] ; then
+	echo '[ERROR] Config file not exist, please use URL[*] to define the config file'
+  echo '[ERROR] And the config file path need to be the 1st argument of the command!'
+	exit 1;
+fi
+
+if [ -z "$2" ] ; then
+	echo '[ERROR] Please input the filename to export test result'
+	exit 1;
+fi
+
+source $1
+
+rm $2
+
+for U in ${URL[*]} ; do
+for name in {1..20} ; do
+	export TIMES=$((10*$name))
+	echo URL:$U >> $2
+	echo TS:`date +"%Y%m%d %H:%M:%S"` >> $2
+	echo N:$TIMES >> $2
+	ab -c $TIMES -t 60 $U >> $2
+	sleep 5;
+done
+done
