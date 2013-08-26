@@ -10,6 +10,12 @@ Only git support now...
 git checkout [this repository]
 ```
 
+Install dependency
+
+```
+cd [path-to-this] && npm install
+```
+
 ## Usage
 
 1. Prepare the config file that contains the test paths
@@ -42,6 +48,29 @@ or
 
 $path-to-this/bin/abparser result.log -t result.csv
 ```
+
+The output json will like:
+
+```
+[{ URL: 'http://192.168.1.1/upload/mov_bbb.mp4',
+    TS: '20130822 21:53:10',
+    N: '170',
+    'Time taken for tests': '60.170 seconds',
+    'Complete requests': '3134',
+    'Failed requests': '0',
+    'Write errors': '0',
+    'Total transferred': '2525072828 bytes',
+    'Requests per second': '52.09 [#/sec] (mean)',
+    'Transfer rate': '40981.85 [Kbytes/sec] received',
+    'Total min': '202',
+    'Total mean1': '3152',
+    'Total mean2': '1737.0',
+    'Total median': '3108',
+    'Total max': '19400' }
+    ....(skip)}
+```
+
+And the output html will render the json to html table...
 
 ## Help page
 
